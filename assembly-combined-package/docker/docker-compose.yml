@@ -1,0 +1,182 @@
+version: "3"
+
+services:
+  #linkis单独的数据库
+  linkis-mysql:
+    image: harbor.software.dc/mpdata/linkis-mysql:1.0.2-ljgk 
+    environment:
+      - "MYSQL_ROOT_PASSWORD=123456"
+      - "MYSQL_DATABASE=linkis"
+      - "TZ=Asia/Shanghai"
+    hostname: linkis-mysql
+    container_name: linkis-mysql
+    ports:
+      - "3306:3306"
+    network_mode: "host"
+  #以下为linkis应用下的容器      
+  linkis-mg-eureka:
+    image: harbor.software.dc/mpdata/linkis-install:1.0.2-ljgk
+    volumes:
+      - ../assembly-combined/conf/application-linkis.yml:/appcom/Install/LinkisInstall/conf/application-linkis.yml
+      - ../assembly-combined/conf/log4j2.xml:/appcom/Install/LinkisInstall/conf/log4j2.xml
+      - ../assembly-combined/conf/application-eureka.yml:/appcom/Install/LinkisInstall/conf/application-eureka.yml
+      - ./logs/:/appcom/Install/LinkisInstall/logs
+    environment:
+      - "TZ=Asia/Shanghai"
+    entrypoint: "sh /appcom/Install/LinkisInstall/sbin/wait-for.sh linkis-mysql:3306 -t 300 --  su - hadoop -c 'sh /appcom/Install/LinkisInstall/sbin/linkis-daemon.sh start mg-eureka && tail -f /dev/null'"
+    hostname: linkis-mg-eureka
+    ports:
+      - "20303:20303"
+    network_mode: "host"
+  linkis-mg-gateway:
+    image: harbor.software.dc/mpdata/linkis-install:1.0.2-ljgk
+    volumes:
+      - ../assembly-combined/conf/application-linkis.yml:/appcom/Install/LinkisInstall/conf/application-linkis.yml
+      - ../assembly-combined/conf/log4j2.xml:/appcom/Install/LinkisInstall/conf/log4j2.xml
+      - ../assembly-combined/conf/linkis-mg-gateway.properties:/appcom/Install/LinkisInstall/conf/linkis-mg-gateway.properties
+      - ./logs/:/appcom/Install/LinkisInstall/logs
+    environment:
+      - "TZ=Asia/Shanghai"
+    entrypoint: "sh /appcom/Install/LinkisInstall/sbin/wait-for.sh linkis-mg-eureka:20303 -t 300 --  su - hadoop -c 'sh /appcom/Install/LinkisInstall/sbin/linkis-daemon.sh start mg-gateway && tail -f /dev/null'"
+    hostname: linkis-mg-gateway
+    ports:
+      - "9001:9001"
+    depends_on:
+      - "linkis-mysql"
+      - "linkis-mg-eureka"
+    network_mode: "host"
+  linkis-ps-publicservice:
+    image: harbor.software.dc/mpdata/linkis-install:1.0.2-ljgk
+    volumes:
+      - ../assembly-combined/conf/application-linkis.yml:/appcom/Install/LinkisInstall/conf/application-linkis.yml
+      - ../assembly-combined/conf/log4j2.xml:/appcom/Install/LinkisInstall/conf/log4j2.xml
+      - ../assembly-combined/conf/linkis-ps-publicservice.properties:/appcom/Install/LinkisInstall/conf/linkis-ps-publicservice.properties
+      - ./logs/:/appcom/Install/LinkisInstall/logs
+
+    environment:
+      - "TZ=Asia/Shanghai"
+    entrypoint: "sh /appcom/Install/LinkisInstall/sbin/wait-for.sh linkis-mg-gateway:9001 -t 300 -- su - hadoop -c 'sh /appcom/Install/LinkisInstall/sbin/linkis-daemon.sh start ps-publicservice && tail -f /dev/null'"
+    hostname: linkis-ps-publicservice
+    ports:
+      - "9105:9105"
+      - "9205:9205"
+    depends_on:
+      - "linkis-mysql"
+      - "linkis-mg-eureka"
+      - "linkis-mg-gateway"
+
+    network_mode: "host"
+  linkis-cg-linkismanager:
+    image: harbor.software.dc/mpdata/linkis-install:1.0.2-ljgk
+    volumes:
+      - ../assembly-combined/conf/application-linkis.yml:/appcom/Install/LinkisInstall/conf/application-linkis.yml
+      - ../assembly-combined/conf/log4j2.xml:/appcom/Install/LinkisInstall/conf/log4j2.xml
+      - ../assembly-combined/conf/linkis-cg-linkismanager.properties:/appcom/Install/LinkisInstall/conf/linkis-cg-linkismanager.properties
+      - ../assembly-combined/sbin/ext/linkis-cg-linkismanager:/appcom/Install/LinkisInstall/sbin/ext/linkis-cg-linkismanager
+      - ./logs/:/appcom/Install/LinkisInstall/logs
+
+    environment:
+      - "TZ=Asia/Shanghai"
+    entrypoint: "sh /appcom/Install/LinkisInstall/sbin/wait-for.sh linkis-ps-publicservice:9105 -t 300 -- su - hadoop -c 'sh /appcom/Install/LinkisInstall/sbin/linkis-daemon.sh start cg-linkismanager && tail -f /dev/null'"
+    hostname: linkis-cg-linkismanager
+    ports:
+      - "9101:9101"
+      - "9201:9201"
+    depends_on:
+      - "linkis-mysql"
+      - "linkis-mg-eureka"
+      - "linkis-mg-gateway"
+
+    network_mode: "host"  
+  linkis-ps-cs:
+    image: harbor.software.dc/mpdata/linkis-install:1.0.2-ljgk
+    volumes:
+      - ../assembly-combined/conf/application-linkis.yml:/appcom/Install/LinkisInstall/conf/application-linkis.yml
+      - ../assembly-combined/conf/log4j2.xml:/appcom/Install/LinkisInstall/conf/log4j2.xml
+      - ../assembly-combined/conf/linkis-ps-cs.properties:/appcom/Install/LinkisInstall/conf/linkis-ps-cs.properties
+      - ./logs/:/appcom/Install/LinkisInstall/logs
+
+    environment:
+      - "TZ=Asia/Shanghai"
+    entrypoint: "sh /appcom/Install/LinkisInstall/sbin/wait-for.sh linkis-cg-linkismanager:9101 -t 300 -- su - hadoop -c 'sh /appcom/Install/LinkisInstall/sbin/linkis-daemon.sh start ps-cs && tail -f /dev/null'"
+    hostname: linkis-ps-cs
+    ports:
+      - "9108:9108"
+      - "9208:9208"
+    depends_on:
+      - "linkis-mysql"
+      - "linkis-mg-eureka"
+      - "linkis-mg-gateway"
+      - "linkis-ps-publicservice"
+    network_mode: "host"  
+  linkis-cg-entrance:
+    image: harbor.software.dc/mpdata/linkis-install:1.0.2-ljgk
+    volumes:
+      - ../assembly-combined/conf/application-linkis.yml:/appcom/Install/LinkisInstall/conf/application-linkis.yml
+      - ../assembly-combined/conf/log4j2.xml:/appcom/Install/LinkisInstall/conf/log4j2.xml
+      - ../assembly-combined/conf/linkis-cg-entrance.properties:/appcom/Install/LinkisInstall/conf/linkis-cg-entrance.properties
+      - ./logs/:/appcom/Install/LinkisInstall/logs
+      - ./tmp:/appcom/tmp
+      - ./linkis/:/tmp/linkis
+    environment:
+      - "TZ=Asia/Shanghai"
+    entrypoint: "sh /appcom/Install/LinkisInstall/sbin/wait-for.sh linkis-ps-cs:9108 -t 300 -- su - hadoop -c 'sh /appcom/Install/LinkisInstall/sbin/linkis-daemon.sh start cg-entrance && tail -f /dev/null'"
+    hostname: linkis-cg-entrance
+    ports:
+      - "9104:9104"
+      - "9204:9204"
+    depends_on:
+      - "linkis-mysql"
+      - "linkis-mg-eureka"
+      - "linkis-mg-gateway"
+      - "linkis-ps-publicservice"
+    network_mode: "host"
+
+  linkis-cg-engineconnmanager:
+    image: harbor.software.dc/mpdata/linkis-install:1.0.2-ljgk
+    volumes:
+      - ../assembly-combined/conf/application-linkis.yml:/appcom/Install/LinkisInstall/conf/application-linkis.yml
+      - ../assembly-combined/conf/log4j2.xml:/appcom/Install/LinkisInstall/conf/log4j2.xml
+      - ../assembly-combined/conf/linkis-cg-engineconnmanager.properties:/appcom/Install/LinkisInstall/conf/linkis-cg-engineconnmanager.properties
+      - ./logs/:/appcom/Install/LinkisInstall/logs
+
+    environment:
+      - "TZ=Asia/Shanghai"
+    entrypoint: "sh /appcom/Install/LinkisInstall/sbin/wait-for.sh linkis-cg-entrance:9104 -t 300 -- su - hadoop -c 'sh /appcom/Install/LinkisInstall/sbin/linkis-daemon.sh start cg-engineconnmanager && tail -f /dev/null'"
+    hostname: linkis-cg-engineconnmanager
+    ports:
+      - "9102:9102"
+      - "9202:9202"
+    depends_on:
+      - "linkis-mysql"
+      - "linkis-mg-eureka"
+      - "linkis-mg-gateway"
+      - "linkis-ps-publicservice"
+    network_mode: "host"
+
+  linkis-cg-engineplugin:
+    image: harbor.software.dc/mpdata/linkis-install:1.0.2-ljgk
+    volumes:
+      - ../assembly-combined/conf/application-linkis.yml:/appcom/Install/LinkisInstall/conf/application-linkis.yml
+      - ../assembly-combined/conf/log4j2.xml:/appcom/Install/LinkisInstall/conf/log4j2.xml
+      - ../assembly-combined/conf/linkis-cg-engineplugin.properties:/appcom/Install/LinkisInstall/conf/linkis-cg-engineplugin.properties
+      - ./logs/:/appcom/Install/LinkisInstall/logs
+
+
+    environment:
+      - "TZ=Asia/Shanghai"
+      - "INSTALL_HOME=/appcom/Install/LinkisInstall"
+    entrypoint: "sh /appcom/Install/LinkisInstall/sbin/wait-for.sh linkis-cg-engineconnmanager:9102 -t 300 -- su - hadoop -c 'sh /appcom/Install/LinkisInstall/sbin/linkis-daemon.sh start cg-engineplugin && tail -f /dev/null'"
+    hostname: linkis-cg-engineplugin
+    ports:
+      - "9103:9103"
+      - "9203:9203"
+    depends_on:
+      - "linkis-mysql"
+      - "linkis-mg-eureka"
+      - "linkis-mg-gateway"
+      - "linkis-ps-publicservice"
+    network_mode: "host"
+
+    cap_add:
+      - SYS_PTRACE

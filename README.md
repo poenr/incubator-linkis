@@ -1,6 +1,35 @@
 Linkis
 ==========
 
+修改说明
+==========
+
+本分支基于release-1.0.3-rc2修改
+```
+git checkout -b  release-1.0.3-ljgk origin/release-1.0.3-rc2
+```
+
+修改清单
+
+```
+1.适配hadoop2.7.4、hive2.3.9、spark2.4.4大数据环境
+2.修改安装脚本实现无需提示
+3.添加Jdbc引擎及Flink引擎安装到linkis-cg-engineconnmanager
+4.增加编译打包脚本，实现多线程编译
+5.增加容器镜像制作配置，实现docker-compose部署
+```
+
+
+实现多线程编译
+```
+export MAVEN_OPTS="-Xms2g -Xmx2g"
+mvn -N install
+mvn -T 12 -B clean install -pl '!:public-module-combined,!:linkis-package,!:linkis-install-package' -DskipTests
+mvn clean install -pl ':public-module-combined,:linkis-package,:linkis-install-package' -DskipTests
+
+```
+
+
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
 
 [English](README.md) | [中文](README_CN.md)

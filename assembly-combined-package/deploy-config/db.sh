@@ -15,8 +15,8 @@
 #
 
 ### Used to store user's custom variables, user's configuration, UDFs and functions, while providing the JobHistory service
-MYSQL_HOST=
-MYSQL_PORT=
-MYSQL_DB=
-MYSQL_USER=
-MYSQL_PASSWORD=
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_DB=linkis
+MYSQL_USER=root
+MYSQL_PASSWORD=123456

@@ -47,12 +47,12 @@ ENGINECONN_ROOT_PATH=/appcom/tmp
 
 ### Provide the DB information of Hive metadata database.
 ### Attention! If there are special characters like "&", they need to be enclosed in quotation marks.
-HIVE_META_URL=""
-HIVE_META_USER=""
-HIVE_META_PASSWORD=""
+HIVE_META_URL="jdbc:mysql://hive-metastore-mysql:53306/hive?useSSL=false"
+HIVE_META_USER="root"
+HIVE_META_PASSWORD="123456"
 
 ##YARN REST URL  spark engine required
-YARN_RESTFUL_URL=http://127.0.0.1:8088
+YARN_RESTFUL_URL=http://resourcemanager:8088
 
 ## request spnego enabled Yarn resource restful interface When Yarn enable kerberos
 ## If your environment yarn interface can be accessed directly, ignore it
@@ -72,9 +72,9 @@ SPARK_CONF_DIR=/appcom/config/spark-config
 
 ## Engine version conf
 #SPARK_VERSION
-#SPARK_VERSION=2.4.3
+SPARK_VERSION=2.4.4
 ##HIVE_VERSION
-#HIVE_VERSION=1.2.1
+HIVE_VERSION=2.3.9
 #PYTHON_VERSION=python2
 
 ################### The install Configuration of all Micro-Services #####################
@@ -88,38 +88,38 @@ SPARK_CONF_DIR=/appcom/config/spark-config
 
 ###  EUREKA install information
 ###  You can access it in your browser at the address below:http://${EUREKA_INSTALL_IP}:${EUREKA_PORT}
-#EUREKA_INSTALL_IP=127.0.0.1         # Microservices Service Registration Discovery Center
+EUREKA_INSTALL_IP=linkis-mg-eureka        # Microservices Service Registration Discovery Center
 EUREKA_PORT=20303
 export EUREKA_PREFER_IP=false
 
 ###  Gateway install information
-#GATEWAY_INSTALL_IP=127.0.0.1
+GATEWAY_INSTALL_IP=linkis-mg-gateway
 GATEWAY_PORT=9001
 
 ### ApplicationManager
-#MANAGER_INSTALL_IP=127.0.0.1
+MANAGER_INSTALL_IP=linkis-cg-linkismanager
 MANAGER_PORT=9101
 
 ### EngineManager
-#ENGINECONNMANAGER_INSTALL_IP=127.0.0.1
+ENGINECONNMANAGER_INSTALL_IP=linkis-cg-engineconnmanager
 ENGINECONNMANAGER_PORT=9102
 
 
 
 ### EnginePluginServer
-#ENGINECONN_PLUGIN_SERVER_INSTALL_IP=127.0.0.1
+ENGINECONN_PLUGIN_SERVER_INSTALL_IP=linkis-cg-engineplugin
 ENGINECONN_PLUGIN_SERVER_PORT=9103
 
 ### LinkisEntrance
-#ENTRANCE_INSTALL_IP=127.0.0.1
+ENTRANCE_INSTALL_IP=linkis-cg-entrance
 ENTRANCE_PORT=9104
 
 ###  publicservice
-#PUBLICSERVICE_INSTALL_IP=127.0.0.1
+PUBLICSERVICE_INSTALL_IP=linkis-ps-publicservice
 PUBLICSERVICE_PORT=9105
 
 ### cs
-#CS_INSTALL_IP=127.0.0.1
+CS_INSTALL_IP=linkis-ps-cs
 CS_PORT=9108
 
 ########################################################################################
@@ -133,7 +133,7 @@ CS_PORT=9108
 export SERVER_HEAP_SIZE="512M"
 
 ##The decompression directory and the installation directory need to be inconsistent
-#LINKIS_HOME=/appcom/Install/LinkisInstall
+LINKIS_HOME=/appcom/Install/LinkisInstall
 
 LINKIS_VERSION=1.0.3
 

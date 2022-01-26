@@ -131,6 +131,12 @@ echo ""
 
 MYSQL_INSTALL_MODE=1
 
+if [ -n "$1" ] ;then
+   if [ "$1" -eq "2" ]; then
+   MYSQL_INSTALL_MODE=2
+   echo "You chose Rebuild the table"
+   fi
+else
 read -p "Please input the choice:"  idx
 if [[ '2' = "$idx" ]];then
   MYSQL_INSTALL_MODE=2
@@ -142,6 +148,7 @@ else
   echo "no choice,exit!"
   exit 1
 fi
+fi
 
 echo "create hdfs  directory and local directory"
 if [ "$WORKSPACE_USER_ROOT_PATH" != "" ]
@@ -150,6 +157,7 @@ then
   if [[ $WORKSPACE_USER_ROOT_PATH == file://* ]];then
     localRootDir=${WORKSPACE_USER_ROOT_PATH#file://}
     mkdir -p $localRootDir/$deployUser
+    mkdir -p $localRootDir/$deployUser/logs
     sudo chmod -R 775 $localRootDir/$deployUser
   elif [[ $WORKSPACE_USER_ROOT_PATH == hdfs://* ]];then
     localRootDir=${WORKSPACE_USER_ROOT_PATH#hdfs://}
@@ -202,7 +210,7 @@ then
   export LINKIS_HOME=${workDir}/LinkisInstall
 fi
 if [  -d $LINKIS_HOME ] && [ "$LINKIS_HOME" != "$workDir" ];then
-   rm -r $LINKIS_HOME-bak
+   rm -rf $LINKIS_HOME-bak
    echo "mv  $LINKIS_HOME  $LINKIS_HOME-bak"
    mv  $LINKIS_HOME  $LINKIS_HOME-bak
 fi
@@ -222,6 +230,7 @@ else
 fi
 
 cp ${LINKIS_CONFIG_PATH} $LINKIS_HOME/conf
+cp ${LINKIS_DB_CONFIG_PATH} $LINKIS_HOME/conf
 
 ## sql init
 if [ "$YARN_RESTFUL_URL" != "" ]
@@ -244,14 +253,16 @@ SERVER_IP=$local_host
 ##Label set start
 if [ "$SPARK_VERSION" != "" ]
 then
-  sed -i ${txt}  "s#spark-2.4.3#spark-$SPARK_VERSION#g" $LINKIS_HOME/db/linkis_dml.sql
+  sed -i ${txt}  "s#spark-2.4.4#spark-$SPARK_VERSION#g" $LINKIS_HOME/db/linkis_dml.sql
   sed -i ${txt}  "s#\#wds.linkis.spark.engine.version.*#wds.linkis.spark.engine.version=$SPARK_VERSION#g" $common_conf
+  sed -i ${txt}  "s#spark-2.4.4#spark-$SPARK_VERSION#g" $LINKIS_HOME/bin/linkis-cli-spark-submit
 fi
 
 if [ "$HIVE_VERSION" != "" ]
 then
-  sed -i ${txt}  "s#hive-2.3.3#hive-$HIVE_VERSION#g" $LINKIS_HOME/db/linkis_dml.sql
+  sed -i ${txt}  "s#hive-2.3.9#hive-$HIVE_VERSION#g" $LINKIS_HOME/db/linkis_dml.sql
   sed -i ${txt}  "s#\#wds.linkis.hive.engine.version.*#wds.linkis.hive.engine.version=$HIVE_VERSION#g" $common_conf
+  sed -i ${txt}  "s#hive-2.3.9#hive-$HIVE_VERSION#g" $LINKIS_HOME/bin/linkis-cli-hive 
 fi
 
 if [ "$PYTHON_VERSION" != "" ]
@@ -326,7 +337,8 @@ sed -i ${txt}  "s#wds.linkis.filesystem.hdfs.root.path.*#wds.linkis.filesystem.h
 ##gateway
 gateway_conf=$LINKIS_HOME/conf/linkis-mg-gateway.properties
 echo "update conf $gateway_conf"
-defaultPwd=`date +%s%N | md5sum |cut -c 1-9`
+#defaultPwd=`date +%s%N | md5sum |cut -c 1-9`
+defaultPwd=hadoop
 sed -i ${txt}  "s#wds.linkis.ldap.proxy.url.*#wds.linkis.ldap.proxy.url=$LDAP_URL#g" $gateway_conf
 sed -i ${txt}  "s#wds.linkis.ldap.proxy.baseDN.*#wds.linkis.ldap.proxy.baseDN=$LDAP_BASEDN#g" $gateway_conf
 sed -i ${txt}  "s#wds.linkis.ldap.proxy.userNameFormat.*#wds.linkis.ldap.proxy.userNameFormat=$LDAP_USER_NAME_FORMAT#g" $gateway_conf
@@ -337,6 +349,13 @@ then
   sed -i ${txt}  "s#spring.server.port.*#spring.server.port=$GATEWAY_PORT#g" $gateway_conf
 fi
 
+
+#linkiscli
+linkiscli_conf=$LINKIS_HOME/conf/linkis-cli/linkis-cli.properties
+if [ "$GATEWAY_INSTALL_IP" != "" ]
+then
+  sed -i ${txt}  "s#wds.linkis.client.common.gatewayUrl.*#wds.linkis.client.common.gatewayUrl=http://$GATEWAY_INSTALL_IP:$GATEWAY_PORT#g" $linkiscli_conf
+fi
 
 manager_conf=$LINKIS_HOME/conf/linkis-cg-linkismanager.properties
 if [ "$MANAGER_PORT" != "" ]
@@ -407,6 +426,12 @@ if [ "$CS_PORT" != "" ]
 then
   sed -i ${txt}  "s#spring.server.port.*#spring.server.port=$CS_PORT#g" $cs_conf
 fi
+
+chmod a+x $LINKIS_HOME/sbin/*.sh
+chmod a+x $LINKIS_HOME/bin/linkis*
+
+#cp /opt/hive/apache-hive-2.3.9-bin/lib/datanucleus-api* /appcom/Install/LinkisInstall/lib/linkis-engineconn-plugins/hive/dist/v2.3.9/lib/
+#cp /opt/hive/apache-hive-2.3.9-bin/lib/javax.jdo-3.2.0-m3.jar /appcom/Install/LinkisInstall/lib/linkis-engineconn-plugins/hive/dist/v2.3.9/lib/
 
 
 echo "Congratulations! You have installed Linkis $LINKIS_VERSION successfully, please use sh $LINKIS_HOME/sbin/linkis-start-all.sh to start it!"

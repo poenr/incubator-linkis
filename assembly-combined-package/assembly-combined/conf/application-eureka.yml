@@ -22,16 +22,16 @@ server:
   port: 20303
 eureka:
   instance:
-    hostname:
-#    preferIpAddress: true
+    hostname: linkis-mg-eureka
+    preferIpAddress: true
   client:
-#    register-with-eureka: false
-#    fetch-registry: false
+    register-with-eureka: false
+    fetch-registry: false
     serviceUrl:
-      defaultZone: http://127.0.0.1:20303/eureka/
-#  server:
-#    enableSelfPreservation: false
+      defaultZone: http://linkis-mg-eureka:20303/eureka/
+  server:
+    enableSelfPreservation: false
     enable-self-preservation: false
     eviction-interval-timer-in-ms: 3000
-  server:
     response-cache-update-interval-ms: 2000
+    peer-node-read-timeout-ms: 1000

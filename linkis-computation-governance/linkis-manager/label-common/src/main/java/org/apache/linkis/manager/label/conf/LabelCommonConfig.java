@@ -29,9 +29,9 @@ public class LabelCommonConfig {
 
     public final static CommonVars<String> LABEL_ENTITY_PACKAGES = CommonVars.apply("wds.linkis.label.entity.packages", "");
 
-    public final static CommonVars<String> SPARK_ENGINE_VERSION = CommonVars.apply("wds.linkis.spark.engine.version", "2.4.3");
+    public final static CommonVars<String> SPARK_ENGINE_VERSION = CommonVars.apply("wds.linkis.spark.engine.version", "2.4.4");
 
-    public final static CommonVars<String> HIVE_ENGINE_VERSION = CommonVars.apply("wds.linkis.hive.engine.version", "2.3.3");
+    public final static CommonVars<String> HIVE_ENGINE_VERSION = CommonVars.apply("wds.linkis.hive.engine.version", "2.3.9");
 
     public final static CommonVars<String> PYTHON_ENGINE_VERSION = CommonVars.apply("wds.linkis.python.engine.version", "python2");
 

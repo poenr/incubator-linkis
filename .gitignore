@@ -149,3 +149,4 @@ linkis-spring-cloud-services/linkis-service-gateway/target/
 linkis-spring-cloud-services/target/
 
 target/
+assembly-combined-package/docker/logs/*

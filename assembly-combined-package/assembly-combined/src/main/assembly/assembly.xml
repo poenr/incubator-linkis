@@ -115,7 +115,28 @@
         <include>**/*</include>
       </includes>
     </fileSet>
+    
+    <!--jdbc-->
+    <fileSet>
+      <directory>
+        ../../linkis-engineconn-plugins/engineconn-plugins/jdbc/target/out/
+      </directory>
+      <outputDirectory>lib/linkis-engineconn-plugins/</outputDirectory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+    </fileSet>
 
+    <!--flink-->
+    <fileSet>
+      <directory>
+        ../../linkis-engineconn-plugins/engineconn-plugins/flink/target/flink-engineconn/
+      </directory>
+      <outputDirectory>lib/linkis-engineconn-plugins/</outputDirectory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+    </fileSet>
 
       <!--lib-->
         <!--linkis-spring-cloud-services-->

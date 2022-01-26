@@ -39,6 +39,9 @@
         <logger name="com.netflix.loadbalancer.DynamicServerListLoadBalancer" level="warn" additivity="true">
             <appender-ref ref="RollingFile"/>
         </logger>
+        <logger name="com.netflix" level="warn" additivity="true">
+            <appender-ref ref="RollingFile"/>
+        </logger>
     </loggers>
 </configuration>
 

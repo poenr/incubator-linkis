@@ -101,7 +101,7 @@
 
     <properties>
         <linkis.version>1.0.3</linkis.version>
-        <hadoop.version>2.7.2</hadoop.version>
+        <hadoop.version>2.7.4</hadoop.version>
         <spring.eureka.version>2.2.1.RELEASE</spring.eureka.version>
         <spring.feign.version>2.2.1.RELEASE</spring.feign.version>
         <spring.boot.version>2.3.2.RELEASE</spring.boot.version>
@@ -227,7 +227,6 @@
                 <groupId>mysql</groupId>
                 <artifactId>mysql-connector-java</artifactId>
                 <version>${mysql.connector.version}</version>
-                <scope>test</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
